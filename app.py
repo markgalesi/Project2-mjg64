@@ -1,6 +1,7 @@
 # app.py
 from os.path import join, dirname
 from dotenv import load_dotenv
+from datetime import datetime
 import os
 import flask
 import flask_sqlalchemy
@@ -33,7 +34,6 @@ db.session.commit()
 def emit_all_messages(channel):
     all_messages = [db_users.message for db_users in db.session.execute("SELECT * FROM " + current_user)]
     print(all_messages)
-        
     socketio.emit(channel, {
         'allMessages': all_messages
     })
@@ -68,8 +68,8 @@ def on_new_username(data):
 def on_new_message(data):
     print("Got an event for new message input with data:", data)
     print(data["message"])
-    #db.session.add(models.make_user(data["username"]));
-    db.session.execute("INSERT INTO " + current_user + " (message,created_on) VALUES ('" + data["message"] + "','2020-06-22 19:10:25-07');")
+    now = datetime.now()
+    db.session.execute("INSERT INTO " + current_user + " (message,created_on) VALUES ('" + data["message"] + "','" + str(now) + "');")
     db.session.commit();
     
     emit_all_messages(MESSAGES_RECEIVED_CHANNEL)

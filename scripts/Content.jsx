@@ -22,10 +22,11 @@ export function Content() {
 
     return (
         <div>
-                <ol>
+                <ul>
                     {messages.map((message) =>
-                        <li>{messages}</li>)}
-                </ol>
+                        <li>{message}</li>
+                    )}
+                </ul>
             <LoginButton />
             <SendButton />
         </div>
