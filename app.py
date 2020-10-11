@@ -5,9 +5,10 @@ import os
 import flask
 import flask_sqlalchemy
 import flask_socketio
-import models 
+#import models 
 
-USERNAMESS_RECEIVED_CHANNEL = 'usernames received'
+MESSAGES_RECEIVED_CHANNEL = 'messages received'
+current_user="user1"
 
 app = flask.Flask(__name__)
 
@@ -29,11 +30,12 @@ db.app = app
 db.create_all()
 db.session.commit()
 
-def emit_all_usernames(channel):
-    all_usernames = [db_users.username for db_users in db.session.query(models.Users).all()]
+def emit_all_messages(channel):
+    all_messages = [db_users.message for db_users in db.session.execute("SELECT * FROM " + current_user)]
+    print(all_messages)
         
     socketio.emit(channel, {
-        'allUsernames': all_usernames
+        'allMessages': all_messages
     })
 
 
@@ -44,7 +46,7 @@ def on_connect():
         'test': 'Connected'
     })
     
-    emit_all_usernames(USERNAMESS_RECEIVED_CHANNEL)
+    emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
     
 
 @socketio.on('disconnect')
@@ -54,15 +56,27 @@ def on_disconnect():
 @socketio.on('new username input')
 def on_new_username(data):
     print("Got an event for new username input with data:", data)
-    
-    db.session.add(models.Users(data["username"]));
+    print(data["username"])
+    current_user=data["username"]
+    try:
+        db.session.execute("CREATE TABLE " + data["username"] + " (id serial PRIMARY KEY,message VARCHAR ( 255 ) NOT NULL,created_on TIMESTAMP NOT NULL);")
+    except:
+        current_user=data["username"]
     db.session.commit();
     
-    emit_all_usernames(USERNAMESS_RECEIVED_CHANNEL)
+@socketio.on('new message input')
+def on_new_message(data):
+    print("Got an event for new message input with data:", data)
+    print(data["message"])
+    #db.session.add(models.make_user(data["username"]));
+    db.session.execute("INSERT INTO " + current_user + " (message,created_on) VALUES ('" + data["message"] + "','2020-06-22 19:10:25-07');")
+    db.session.commit();
+    
+    emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
 
 @app.route('/')
 def index():
-    emit_all_usernames(USERNAMESS_RECEIVED_CHANNEL)
+    emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
 
     return flask.render_template("index.html")
 

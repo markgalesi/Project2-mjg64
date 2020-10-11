@@ -2,18 +2,19 @@
 import * as React from 'react';
 
 
-import { Button } from './Button';
+import { LoginButton } from './LoginButton';
+import { SendButton } from './SendButton';
 import { Socket } from './Socket';
 
 export function Content() {
-    const [usernames, setUsernames] = React.useState([]);
+    const [messages, setMessages] = React.useState([]);
     
     function getNewAddresses() {
         React.useEffect(() => {
-            Socket.on('usernames received', (data) => {
-                console.log("Received usernames from server: " + data['allUsernames']);
-                setUsernames(data['allUsernames']);
-            })
+            Socket.on('messages received', (data) => {
+                console.log("Received messages from server: " + data['allMessages']);
+                setMessages(data['allMessages']);
+            });
         });
     }
     
@@ -21,12 +22,12 @@ export function Content() {
 
     return (
         <div>
-            <h1>Usernames!</h1>
                 <ol>
-                    {usernames.map((username, index) =>
-                        <li key={index}>{usernames}</li>)}
+                    {messages.map((message) =>
+                        <li>{messages}</li>)}
                 </ol>
-            <Button />
+            <LoginButton />
+            <SendButton />
         </div>
     );
 }
