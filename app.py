@@ -9,7 +9,8 @@ import flask_socketio
 #import models 
 
 MESSAGES_RECEIVED_CHANNEL = 'messages received'
-current_user="user1"
+global current_user
+current_user='user1'
 
 app = flask.Flask(__name__)
 
@@ -32,11 +33,12 @@ db.create_all()
 db.session.commit()
 
 def emit_all_messages(channel):
-    all_messages = [db_users.message for db_users in db.session.execute("SELECT * FROM " + current_user)]
-    print(all_messages)
+    all_messages = [db.session.execute("SELECT * FROM " + current_user)]
+    print("ALL" + str(all_messages))
     socketio.emit(channel, {
         'allMessages': all_messages
     })
+
 
 
 @socketio.on('connect')
@@ -56,13 +58,14 @@ def on_disconnect():
 @socketio.on('new username input')
 def on_new_username(data):
     print("Got an event for new username input with data:", data)
-    print(data["username"])
+    global current_user
     current_user=data["username"]
     try:
         db.session.execute("CREATE TABLE " + data["username"] + " (id serial PRIMARY KEY,message VARCHAR ( 255 ) NOT NULL,created_on TIMESTAMP NOT NULL);")
     except:
         current_user=data["username"]
     db.session.commit();
+    emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
     
 @socketio.on('new message input')
 def on_new_message(data):

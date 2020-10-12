@@ -13,10 +13,11 @@ function handleSubmit(event) {
     event.preventDefault();
 }
 
+
 export function LoginButton() {
     return (
         <form onSubmit={handleSubmit}>
-            <h3>Change User</h3>
+            <h3>Change or Create User</h3>
             <input id="username_input"></input>
             <button>Log in</button>
         </form>

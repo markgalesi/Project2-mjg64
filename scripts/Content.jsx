@@ -9,7 +9,7 @@ import { Socket } from './Socket';
 export function Content() {
     const [messages, setMessages] = React.useState([]);
     
-    function getNewAddresses() {
+    function getNewMessages() {
         React.useEffect(() => {
             Socket.on('messages received', (data) => {
                 console.log("Received messages from server: " + data['allMessages']);
@@ -18,16 +18,16 @@ export function Content() {
         });
     }
     
-    getNewAddresses();
+    getNewMessages();
 
     return (
         <div>
+            <LoginButton />
                 <ul>
                     {messages.map((message) =>
                         <li>{message}</li>
                     )}
                 </ul>
-            <LoginButton />
             <SendButton />
         </div>
     );
