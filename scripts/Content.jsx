@@ -24,8 +24,8 @@ export function Content() {
         <div>
             <LoginButton />
                 <ul>
-                    {messages.map((message) =>
-                        <li>{message}</li>
+                    {messages.map((info) =>
+                        <li>{info[0]} and {info[1]}</li>
                     )}
                 </ul>
             <SendButton />

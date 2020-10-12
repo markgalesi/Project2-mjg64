@@ -33,7 +33,7 @@ db.create_all()
 db.session.commit()
 
 def emit_all_messages(channel):
-    all_messages = [db.session.execute("SELECT * FROM " + current_user)]
+    all_messages = [[db_user.message,str(db_user.created_on)] for db_user in db.session.execute("SELECT * FROM " + current_user)]
     print("ALL" + str(all_messages))
     socketio.emit(channel, {
         'allMessages': all_messages
