@@ -25,7 +25,7 @@ export function Content() {
             <LoginButton />
                 <ul>
                     {messages.map((info) =>
-                        <li>{info[0]} and {info[1]}</li>
+                        <li>{info[0]} at {info[1]},from:{info[2].toString()}</li>
                     )}
                 </ul>
             <SendButton />

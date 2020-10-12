@@ -6,11 +6,12 @@ import os
 import flask
 import flask_sqlalchemy
 import flask_socketio
-#import models 
+import chatter
+import time
 
 MESSAGES_RECEIVED_CHANNEL = 'messages received'
 global current_user
-current_user='user1'
+current_user='default'
 
 app = flask.Flask(__name__)
 
@@ -29,11 +30,16 @@ db.init_app(app)
 db.app = app
 
 
-db.create_all()
-db.session.commit()
+chat = chatter.chatter()
+
+try:
+    db.session.execute("CREATE TABLE " + current_user + " (id serial PRIMARY KEY,message VARCHAR ( 255 ) NOT NULL,created_on TIMESTAMP NOT NULL,from_user boolean);")
+    db.session.commit();
+except:
+    print("user logged in")
 
 def emit_all_messages(channel):
-    all_messages = [[db_user.message,str(db_user.created_on)] for db_user in db.session.execute("SELECT * FROM " + current_user)]
+    all_messages = [[db_user.message,str(db_user.created_on),db_user.from_user] for db_user in db.session.execute("SELECT * FROM " + current_user)]
     print("ALL" + str(all_messages))
     socketio.emit(channel, {
         'allMessages': all_messages
@@ -61,7 +67,7 @@ def on_new_username(data):
     global current_user
     current_user=data["username"]
     try:
-        db.session.execute("CREATE TABLE " + data["username"] + " (id serial PRIMARY KEY,message VARCHAR ( 255 ) NOT NULL,created_on TIMESTAMP NOT NULL);")
+        db.session.execute("CREATE TABLE " + data["username"] + " (id serial PRIMARY KEY,message VARCHAR ( 255 ) NOT NULL,created_on TIMESTAMP NOT NULL,from_user boolean);")
     except:
         current_user=data["username"]
     db.session.commit();
@@ -72,7 +78,13 @@ def on_new_message(data):
     print("Got an event for new message input with data:", data)
     print(data["message"])
     now = datetime.now()
-    db.session.execute("INSERT INTO " + current_user + " (message,created_on) VALUES ('" + data["message"] + "','" + str(now) + "');")
+    db.session.execute("INSERT INTO " + current_user + " (message,created_on,from_user) VALUES ('" + data["message"] + "','" + str(now) + "', TRUE);")
+    db.session.commit();
+    time.sleep(1)
+    now = datetime.now()
+    print(chat.respond(data["message"]))
+    response = chat.respond(data["message"]).replace('\'','\'\'')
+    db.session.execute("INSERT INTO " + current_user + " (message,created_on,from_user) VALUES ('" + response + "','" + str(now) + "', FALSE);")
     db.session.commit();
     
     emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
