@@ -10,8 +10,6 @@ import chatter
 import time
 
 MESSAGES_RECEIVED_CHANNEL = 'messages received'
-global current_user
-current_user='default_user'
 
 app = flask.Flask(__name__)
 
@@ -32,18 +30,22 @@ db.app = app
 
 chat = chatter.chatter()
 try:
-    db.session.execute("CREATE TABLE " + current_user + " (id serial PRIMARY KEY,message VARCHAR ( 255 ) NOT NULL,created_on TIMESTAMP NOT NULL,from_user boolean);")
+    db.session.execute("CREATE TABLE users (id serial PRIMARY KEY,username VARCHAR ( 255 ) NOT NULL);")
     db.session.commit();
 except:
-    print(current_user + " signed in")
-
+    print("user db created")
+    
+try:
+    db.session.execute("CREATE TABLE messages (id serial PRIMARY KEY,message VARCHAR ( 255 ) NOT NULL,created_on TIMESTAMP NOT NULL,from_user VARCHAR ( 255 ));")
+    db.session.commit();
+except:
+    print("messages db created")
 
 def emit_all_messages(channel):
-    all_messages = [[db_user.message,str(db_user.created_on),db_user.from_user] for db_user in db.session.execute("SELECT * FROM " + current_user)]
-    print("ALL" + str(all_messages))
+    all_messages = [[db_user.message,str(db_user.created_on),db_user.from_user] for db_user in db.session.execute("SELECT * FROM messages")]
+    #print("ALL" + str(all_messages))
     socketio.emit(channel, {
-        'allMessages': all_messages,
-        'username' : current_user
+        'allMessages': all_messages
     })
 
 
@@ -67,7 +69,8 @@ def on_new_username(data):
     global current_user
     current_user=data["username"]
     try:
-        db.session.execute("CREATE TABLE " + data["username"] + " (id serial PRIMARY KEY,message VARCHAR ( 255 ) NOT NULL,created_on TIMESTAMP NOT NULL,from_user boolean);")
+        db.session.execute("INSERT INTO users (username VARCHAR ( 255 ) NOT NULL) VALUES (" + data["username"] + ")")
+        #db.session.execute("CREATE TABLE " + data["username"] + " (id serial PRIMARY KEY,message VARCHAR ( 255 ) NOT NULL,created_on TIMESTAMP NOT NULL,from_user boolean);")
     except:
         current_user=data["username"]
     db.session.commit();
@@ -76,16 +79,17 @@ def on_new_username(data):
 @socketio.on('new message input')
 def on_new_message(data):
     print("Got an event for new message input with data:", data)
-    print(data["message"])
     now = datetime.now()
     newMessage=data["message"].replace('\'','\'\'')
-    db.session.execute("INSERT INTO " + current_user + " (message,created_on,from_user) VALUES ('" + newMessage + "','" + str(now) + "', TRUE);")
+    print("USER:" + data["username"])
+    newUser=data["username"].replace('\'','\'\'')
+    db.session.execute("INSERT INTO messages (message,created_on,from_user) VALUES ('" + newMessage + "','" + str(now) + "', '" + newUser + "');")
     db.session.commit();
-    now = datetime.now()
+    """now = datetime.now()
     print(chat.respond(data["message"]))
     response = chat.respond(data["message"]).replace('\'','\'\'')
     db.session.execute("INSERT INTO " + current_user + " (message,created_on,from_user) VALUES ('" + response + "','" + str(now) + "', FALSE);")
-    db.session.commit();
+    db.session.commit();"""
     
     emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
 
