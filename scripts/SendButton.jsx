@@ -16,7 +16,7 @@ function handleSubmit(event) {
 export function SendButton() {
     return (
         <form onSubmit={handleSubmit}>
-             <textarea id="message_input" placeholder="Type message.."></textarea>
+            <input id="message_input" placeholder="Type message.."></input>
             <button>Send!</button>
         </form>
     );
