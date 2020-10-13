@@ -70,7 +70,6 @@ def on_new_username(data):
     current_user=data["username"]
     try:
         db.session.execute("INSERT INTO users (username VARCHAR ( 255 ) NOT NULL) VALUES (" + data["username"] + ")")
-        #db.session.execute("CREATE TABLE " + data["username"] + " (id serial PRIMARY KEY,message VARCHAR ( 255 ) NOT NULL,created_on TIMESTAMP NOT NULL,from_user boolean);")
     except:
         current_user=data["username"]
     db.session.commit();
@@ -81,15 +80,15 @@ def on_new_message(data):
     print("Got an event for new message input with data:", data)
     now = datetime.now()
     newMessage=data["message"].replace('\'','\'\'')
-    print("USER:" + data["username"])
     newUser=data["username"].replace('\'','\'\'')
     db.session.execute("INSERT INTO messages (message,created_on,from_user) VALUES ('" + newMessage + "','" + str(now) + "', '" + newUser + "');")
     db.session.commit();
-    """now = datetime.now()
-    print(chat.respond(data["message"]))
-    response = chat.respond(data["message"]).replace('\'','\'\'')
-    db.session.execute("INSERT INTO " + current_user + " (message,created_on,from_user) VALUES ('" + response + "','" + str(now) + "', FALSE);")
-    db.session.commit();"""
+    messageString=str(newMessage)
+    if(messageString[:2]=='!!'):
+        now = datetime.now()
+        response = chat.response(data["message"]).replace('\'','\'\'')
+        db.session.execute("INSERT INTO messages (message,created_on,from_user) VALUES ('" + response + "','" + str(now) + "', 'bot');")
+        db.session.commit();
     
     emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
 

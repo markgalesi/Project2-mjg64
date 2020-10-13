@@ -1,5 +1,6 @@
 import nltk
 from nltk.chat.util import Chat, reflections
+from datetime import datetime
 
 class chatter:
     pairs = (
@@ -89,16 +90,18 @@ class chatter:
         (
             r"Hello(.*)",
             ("Oh good, somebody else to talk to. Joy.", "\'Hello\'? How original..."),
-        ),
-        (
-            r"(.*)",
-            (
-                "I\'m getting bored here. Become more interesting.",
-                "Either become more thrilling or get lost, buddy.",
-                "Change the subject before I die of fatal boredom.",
-            ),
-        ),
+        )
     )
-    def respond(self,input):
-        chat = Chat(self.pairs, reflections)
-        return chat.respond(input)
+    def response(self,input):
+        
+        if(input == "!!about"):
+            return "I\'m a simple chat bot that reponds to input with a defined list of responses, I happen to be quite rude."
+        elif(input == "!!help"):
+            return "!!time-display the time\n!!date-display todays date"
+        elif(input == "!!time"):
+            return "The time is: " + str(datetime.now().strftime("%H:%M:%S"))
+        elif(input == "!!date"):
+            return "The date is: " + str(datetime.today())
+        else:
+            chat = Chat(self.pairs, reflections)
+            return chat.respond(input)

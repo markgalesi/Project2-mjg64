@@ -18,9 +18,6 @@ export function Content() {
             });
         });
     }
-    function displayMessages(info){
-        
-    }
     
     getNewMessages();
     return (
@@ -36,8 +33,15 @@ export function Content() {
                         <span class="time right">{info[1]}</span>
                         </div>
                     }
-                    {info[2]!=setUser() &&
+                    {(info[2]!=setUser() && info[2]!='bot') &&
                         <div class="container darker">
+                        <span class="text left">{info[0]}</span>
+                        <span class="user left">from:{info[2]}</span>
+                        <span class="time left">{info[1]}</span>
+                        </div>
+                    }
+                    {info[2]=='bot' &&
+                        <div class="container bot">
                         <span class="text left">{info[0]}</span>
                         <span class="user left">from:{info[2]}</span>
                         <span class="time left">{info[1]}</span>
